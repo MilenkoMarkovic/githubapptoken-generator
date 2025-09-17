@@ -1,0 +1,44 @@
+name: 'GitHub App Token Generator'
+description: 'Generate access token for GitHub App with proxy support'
+author: 'Your Organization'
+
+inputs:
+  github_organization:
+    description: 'GitHub organization name'
+    required: true
+  app_installation_id:
+    description: 'GitHub App installation ID'
+    required: true
+  app_private_key:
+    description: 'GitHub App RSA private key (PEM format)'
+    required: true
+  proxy_url:
+    description: 'Proxy URL (optional)'
+    required: false
+    default: ''
+  proxy_username:
+    description: 'Proxy username (optional)'
+    required: false
+    default: ''
+  proxy_password:
+    description: 'Proxy password (optional)'
+    required: false
+    default: ''
+  token_expiration:
+    description: 'Token expiration time in minutes (default: 60)'
+    required: false
+    default: '60'
+
+outputs:
+  token:
+    description: 'GitHub App installation access token'
+  expires_at:
+    description: 'Token expiration timestamp (ISO 8601)'
+
+runs:
+  using: 'node20'
+  main: 'dist/index.js'
+
+branding:
+  icon: 'key'
+    color: 'blue'
