@@ -1,0 +1,68 @@
+ame: Example GitHub App Token Usage
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  generate-token:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Generate GitHub App Token
+        id: generate-token
+        uses: ./  # Use local action (or your-org/github-app-token-action@v1)
+        with:
+          github_organization: ${{ vars.GITHUB_ORGANIZATION }}
+          app_installation_id: ${{ vars.GITHUB_APP_INSTALLATION_ID }}
+          app_private_key: ${{ secrets.GITHUB_APP_PRIVATE_KEY }}
+          proxy_url: ${{ vars.PROXY_URL }}
+          proxy_username: ${{ vars.PROXY_USERNAME }}
+          proxy_password: ${{ secrets.PROXY_PASSWORD }}
+          token_expiration: '30'
+        env:
+          GITHUB_APP_ID: ${{ vars.GITHUB_APP_ID }}
+
+      - name: Use Generated Token
+        run: |
+          echo "Token expires at: ${{ steps.generate-token.outputs.expires_at }}"
+          
+          # Use the token to make authenticated API calls
+          curl -H "Authorization: token ${{ steps.generate-token.outputs.token }}" \
+               -H "Accept: application/vnd.github.v3+json" \
+               https://api.github.com/orgs/${{ vars.GITHUB_ORGANIZATION }}/repos
+
+      - name: Clone Repository with Token
+        run: |
+          git clone https://x-access-token:${{ steps.generate-token.outputs.token }}@github.com/${{ vars.GITHUB_ORGANIZATION }}/some-repo.git
+
+  use-in-matrix:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        organization: ['org1', 'org2', 'org3']
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Generate Token for ${{ matrix.organization }}
+        id: token
+        uses: ./
+        with:
+          github_organization: ${{ matrix.organization }}
+          app_installation_id: ${{ vars.GITHUB_APP_INSTALLATION_ID }}
+          app_private_key: ${{ secrets.GITHUB_APP_PRIVATE_KEY }}
+        env:
+          GITHUB_APP_ID: ${{ vars.GITHUB_APP_ID }}
+
+      - name: List repositories for ${{ matrix.organization }}
+        run: |
+          curl -H "Authorization: token ${{ steps.token.outputs.token }}" \
+               https://api.github.com/orgs/${{ matrix.organization }}/repos
