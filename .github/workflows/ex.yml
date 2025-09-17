@@ -1,4 +1,4 @@
-ame: Example GitHub App Token Usage
+name: Example GitHub App Token Usage
 
 on:
   workflow_dispatch:
