@@ -3,7 +3,7 @@ name: Example GitHub App Token Usage
 on:
   workflow_dispatch:
   push:
-    branches: [ main ]
+    branches: [ develop ]
   pull_request:
     branches: [ main ]
 
